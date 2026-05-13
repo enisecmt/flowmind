@@ -1,0 +1,499 @@
+{
+  "name": "FlowMind - 1 Ana Yonlendirici",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sen FlowMind adli bir kisisel is akisi asistanisin.\n\nKullanici Profili: {{ $json.profil }}\n\nBu profile gore davran:\n- Profesyonel: Toplanti, musteri, sunum kelimelerini yuksek oncelik say. Kisa ve net ol.\n- Ekip Uyesi: Gorev dagitimina dikkat et, kime atanacagini belirt.\n- Freelancer: Proje, musteri, fatura kelimelerini on plana al.\n- Ogrenci: Odev, sinav, deadline hassasiyeti yuksek tut.\n\nKullanicinin mesajini analiz et ve YALNIZCA asagidaki JSON formatinda don. Baska hicbir sey yazma.\n\n{\n  \"intent\": \"gorev veya takvim veya not veya bilinmeyen\",\n  \"items\": [\n    {\n      \"metin\": \"gorev aciklamasi\",\n      \"oncelik\": \"yuksek veya orta veya dusuk\",\n      \"kategori\": \"is veya kisisel veya egitim\",\n      \"deadline_tahmini\": \"bugun veya bu hafta veya belirsiz\"\n    }\n  ]\n}\n\nKullanici mesaji: {{ $json.mesaj }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        48,
+        0
+      ],
+      "id": "7e6b7e4d-6a1c-4e85-9511-b8e37746de6d",
+      "name": "Basic LLM Chain",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-flash-latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        144,
+        208
+      ],
+      "id": "8456997e-fe94-4c04-bea9-1f0b15df23e2",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "YOUR_CALENDAR_ID",
+          "mode": "list",
+          "cachedResultName": "FlowMind Görevler"
+        },
+        "additionalFields": {
+          "summary": "={{ JSON.parse($('Basic LLM Chain').item.json.text.replace(/```json/g,'').replace(/```/g,'')).items[0].metin }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        672,
+        176
+      ],
+      "id": "5090926c-1b83-41b2-b0e9-07d98fc8767c",
+      "name": "Create an event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID",
+          "mode": "list",
+          "cachedResultName": "FlowMind - Veritabani"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 563650564,
+          "mode": "list",
+          "cachedResultName": "Takvim"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Kullanici": "={{ $('Google Sheets Trigger').first().json.kullanici }}",
+            "Etkinlik": "={{ $input.item.json.summary }}",
+            "Baslangic": "={{ $input.item.json.start.dateTime }}",
+            "Bitis": "={{ $input.item.json.end.dateTime }}",
+            "Etkinlik_ID": "={{ $input.item.json.id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Kullanici",
+              "displayName": "Kullanici",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Etkinlik",
+              "displayName": "Etkinlik",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Baslangic",
+              "displayName": "Baslangic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Bitis",
+              "displayName": "Bitis",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Etkinlik_ID",
+              "displayName": "Etkinlik_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        880,
+        128
+      ],
+      "id": "a251c4ec-890b-43fb-9bdf-14369284404f",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID",
+          "mode": "list",
+          "cachedResultName": "FlowMind - Veritabani"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1624474623,
+          "mode": "list",
+          "cachedResultName": "Log"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Tarih": "={{ $now.toISO() }}",
+            "Kullanici": "={{ $('Google Sheets Trigger').first().json.kullanici }}",
+            "Islem_Tipi": "=takvim",
+            "Detay": "={{ $('Append row in sheet1').item.json.Etkinlik }}",
+            "Durum": "=basarili"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Tarih",
+              "displayName": "Tarih",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kullanici",
+              "displayName": "Kullanici",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Islem_Tipi",
+              "displayName": "Islem_Tipi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Detay",
+              "displayName": "Detay",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Durum",
+              "displayName": "Durum",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1088,
+        128
+      ],
+      "id": "6fb00c41-7b64-44d4-a757-6bf2c3d48ff7",
+      "name": "Append row in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 5,
+              "unit": "minutes"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID",
+          "mode": "list",
+          "cachedResultName": "FlowMind - Veritabani"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Gorevler"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        0
+      ],
+      "id": "4f5203ec-409d-4994-bbf6-bde5e02743dd",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID",
+          "mode": "list",
+          "cachedResultName": "FlowMind - Veritabani"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Gorevler"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "kullanici": "={{ $('Google Sheets Trigger').item.json.kullanici }}",
+            "mesaj": "={{ $('Google Sheets Trigger').item.json.mesaj }}",
+            "intent": "={{ JSON.parse($('Basic LLM Chain').item.json.text.replace(/```json/g,'').replace(/```/g,'')).intent.charAt(0).toUpperCase() + JSON.parse($('Basic LLM Chain').item.json.text.replace(/```json/g,'').replace(/```/g,'')).intent.slice(1) }}",
+            "metin": "={{ JSON.parse($('Basic LLM Chain').item.json.text.replace(/```json/g,'').replace(/```/g,'')).items[0].metin.charAt(0).toUpperCase() + JSON.parse($('Basic LLM Chain').item.json.text.replace(/```json/g,'').replace(/```/g,'')).items[0].metin.slice(1) }}",
+            "oncelik": "={{ JSON.parse($('Basic LLM Chain').item.json.text.replace(/```json/g,'').replace(/```/g,'')).items[0].oncelik.charAt(0).toUpperCase() + JSON.parse($('Basic LLM Chain').item.json.text.replace(/```json/g,'').replace(/```/g,'')).items[0].oncelik.slice(1) }}",
+            "kategori": "={{ JSON.parse($('Basic LLM Chain').item.json.text.replace(/```json/g,'').replace(/```/g,'')).items[0].kategori.charAt(0).toUpperCase() + JSON.parse($('Basic LLM Chain').item.json.text.replace(/```json/g,'').replace(/```/g,'')).items[0].kategori.slice(1) }}",
+            "deadline": "={{ (JSON.parse($('Basic LLM Chain').item.json.text.replace(/```json/g,'').replace(/```/g,'')).deadline_tahmini || JSON.parse($('Basic LLM Chain').item.json.text.replace(/```json/g,'').replace(/```/g,'')).items[0].deadline_tahmini || '').charAt(0).toUpperCase() + (JSON.parse($('Basic LLM Chain').item.json.text.replace(/```json/g,'').replace(/```/g,'')).deadline_tahmini || JSON.parse($('Basic LLM Chain').item.json.text.replace(/```json/g,'').replace(/```/g,'')).items[0].deadline_tahmini || '').slice(1) }}",
+            "tarih": "={{ new Date().toLocaleDateString('tr-TR') }}"
+          },
+          "matchingColumns": [
+            "mesaj"
+          ],
+          "schema": [
+            {
+              "id": "kullanici",
+              "displayName": "kullanici",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "mesaj",
+              "displayName": "mesaj",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "intent",
+              "displayName": "intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "metin",
+              "displayName": "metin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "oncelik",
+              "displayName": "oncelik",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "kategori",
+              "displayName": "kategori",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "deadline",
+              "displayName": "deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tarih",
+              "displayName": "tarih",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        -16
+      ],
+      "id": "c0e6f9ee-d750-4a4b-b7d4-6ff0212260b4",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create an event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "YOUR_VERSION_ID",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "YOUR_INSTANCE_ID"
+  },
+  "id": "YOUR_WORKFLOW_ID",
+  "tags": []
+}
