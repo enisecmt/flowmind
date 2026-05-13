@@ -27,14 +27,14 @@ Bireyler günlük sorumluluklarını onlarca farklı platformda yönetmek zorund
 ## 🖥️ Arayüz
 
 ### Glide — Görev Listesi & Form
-![Glide Görevler](images/glide_gorevler.png)
-![Glide Form](images/glide_form.png)
+![Glide Görevler](https://raw.githubusercontent.com/enisecmt/flowmind/refs/heads/main/glide_gorevler.png)
+![Glide Form](https://raw.githubusercontent.com/enisecmt/flowmind/refs/heads/main/glide_form.png)
 
 ### Glide — Takvim Görünümü
-![Glide Takvim](images/glide_takvim.png)
+![Glide Takvim](https://raw.githubusercontent.com/enisecmt/flowmind/refs/heads/main/glide_takvim.png)
 
 ### Gmail — Sabah Brifing
-![Gmail Brifing](images/gmail_brifing.png)
+![Gmail Brifing](https://raw.githubusercontent.com/enisecmt/flowmind/refs/heads/main/gmail_brifing.png)
 
 ---
 
@@ -58,17 +58,17 @@ Bireyler günlük sorumluluklarını onlarca farklı platformda yönetmek zorund
 ### Workflow 1 — Ana Yönlendirici
 Sheets'e yeni satır eklenince tetiklenir → Gemini analiz eder → Sheets güncellenir + Calendar'a etkinlik eklenir.
 
-![Workflow 1](images/workflow1.png)
+![Workflow 1](https://raw.githubusercontent.com/enisecmt/flowmind/refs/heads/main/workflow1.png)
 
 ### Workflow 2 — Zamanlı İşler
 Sabah 08:30'da brifing, Pazar 20:00'de haftalık özet gönderir.
 
-![Workflow 2](images/workflow2.png)
+![Workflow 2](https://raw.githubusercontent.com/enisecmt/flowmind/refs/heads/main/workflow2.png)
 
 ### Workflow 3 — Profil Kurulum
 Google Forms'tan gelen yeni yanıtı Sheets'teki Kullanıcılar sekmesine kaydeder.
 
-![Workflow 3](images/workflow3.png)
+![Workflow 3](https://raw.githubusercontent.com/enisecmt/flowmind/refs/heads/main/workflow3.png)
 
 ---
 
